@@ -11,7 +11,7 @@ export type CheckboxTreeNode = {
 export default function parseBookmarksTreeToCheckboxTree(
   bookmarkTreeNode: chrome.bookmarks.BookmarkTreeNode
 ): CheckboxTreeNode {
-  if (bookmarkTreeNode.children && bookmarkTreeNode.children.length > 0) {
+  if (bookmarkTreeNode.children) {
     return {
       key: bookmarkTreeNode.id,
       title: bookmarkTreeNode.title || "无标题",

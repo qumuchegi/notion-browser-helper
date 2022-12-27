@@ -1,7 +1,7 @@
-export const serialExcutePromises = async (
-  promiseLoaders: (() => Promise<any>)[]
+export const serialExcutePromises = async <T>(
+  promiseLoaders: (() => Promise<T>)[]
 ) => {
-  let rs = []
+  let rs: T[] = []
   for (let pl of promiseLoaders) {
     rs.push(await pl())
   }

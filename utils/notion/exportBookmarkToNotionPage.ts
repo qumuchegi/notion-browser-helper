@@ -6,8 +6,8 @@ import type {
 import { type } from "os"
 
 import {
-  cacheNotionBlockIdByPageId,
-  getNotionDatabaseIdByPageId
+  cacheBookmarkNotionBlockIdByPageId,
+  getBookmarkBlockIdByPageId
 } from "~storage"
 import parseBookmarksTreeToCheckboxTree from "~utils/parseBookmarksData"
 import type { CheckboxTreeNode } from "~utils/parseBookmarksData"
@@ -34,65 +34,64 @@ const exportBookmarkToNotionPage: AccessNotionWrappedFn<Params, void> = async (
       parseBookmarksTreeToCheckboxTree(node)
     )
     // check existed database id
-    const maybeDatabaseId = getNotionDatabaseIdByPageId(notionPageId)
-    console.log({ maybeDatabaseId })
+    const [maybeStatusBlockId, maybeBookmarkBlockIds] =
+      getBookmarkBlockIdByPageId(notionPageId)
+    console.log({ maybeBookmarkBlockIds })
 
-    // show loading on nottion page
-    const addLoadingBlockRes = await client.blocks.children.append({
-      block_id: notionPageId,
-      children: [
-        {
-          type: "heading_2",
-          heading_2: {
-            rich_text: [
-              {
-                text: {
-                  content: "loading bookmark from browser..., wait for a while"
-                },
-                type: "text",
-                annotations: { color: "blue_background" }
-              },
-              {
-                text: { content: "❗️" },
-                type: "text",
-                annotations: {
-                  color: "gray_background"
-                }
-              }
-            ]
-          }
-        }
-      ]
-    })
-    const addLoadingBlockId = addLoadingBlockRes.results[0].id
+    let addLoadingBlockId
     const createTreeBlok = async (treeNodes: BookmarkTreeNode[]) => {
       console.log({ treeNodes })
-      return convertBookMarkTreeToNotionToggleBlock(
+      // show loading on nottion page
+      const addLoadingBlockRes = await client.blocks.children.append({
+        block_id: notionPageId,
+        children: [
+          {
+            type: "heading_2",
+            heading_2: {
+              rich_text: [
+                {
+                  text: {
+                    content:
+                      "loading bookmark from browser..., wait for a while"
+                  },
+                  type: "text",
+                  annotations: { color: "blue_background" }
+                },
+                {
+                  text: { content: "❗️" },
+                  type: "text",
+                  annotations: {
+                    color: "gray_background"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      })
+      const bookmarkBlockIds = await convertBookMarkTreeToNotionToggleBlock(
         treeNodes,
         notionPageId,
         async (blocks, parentBlockId) => {
-          const res = await client.blocks.children.append({
-            block_id: parentBlockId,
-            children: blocks
-          })
-          return { nodeBlockIds: res.results.map((r) => r.id) }
+          try {
+            const res = await client.blocks.children.append({
+              block_id: parentBlockId,
+              children: blocks
+            })
+            return { nodeBlockIds: res.results.map((r) => r.id) }
+          } catch (err) {
+            console.error(err)
+            return { nodeBlockIds: [] }
+          }
         }
       )
-    }
-
-    const updateDatabase = async (treeNodes: BookmarkTreeNode[]) => {
-      // await client.databases.update({
-      //   database_id: maybeDatabaseId,
-      //   properties
-      // })
-    }
-    if (maybeDatabaseId) {
-      console.log("update existed databse")
-      updateDatabase(parsed)
-    } else {
-      // not exist, create a database
-      await createTreeBlok(parsed)
       // remove loading on nottion page
+      addLoadingBlockId = addLoadingBlockRes.results[0].id
+      cacheBookmarkNotionBlockIdByPageId(
+        notionPageId,
+        bookmarkBlockIds,
+        addLoadingBlockId
+      )
       client.blocks.update({
         block_id: addLoadingBlockId,
         heading_2: {
@@ -104,6 +103,31 @@ const exportBookmarkToNotionPage: AccessNotionWrappedFn<Params, void> = async (
           ]
         }
       })
+    }
+
+    const updateDatabase = async (
+      treeNodes: BookmarkTreeNode[],
+      statusBlockId: string,
+      bookmarkBlockIds: string[]
+    ) => {
+      await Promise.all([
+        client.blocks.delete({
+          block_id: statusBlockId
+        }),
+        ...bookmarkBlockIds.map((id) =>
+          client.blocks.delete({
+            block_id: id
+          })
+        )
+      ])
+      createTreeBlok(treeNodes)
+    }
+    if (maybeBookmarkBlockIds) {
+      console.log("update existed databse")
+      updateDatabase(parsed, maybeStatusBlockId, maybeBookmarkBlockIds)
+    } else {
+      // not exist, create a database
+      await createTreeBlok(parsed)
     }
   })
 }
@@ -119,7 +143,7 @@ async function convertBookMarkTreeToNotionToggleBlock(
   ) => Promise<{ nodeBlockIds: string[] }>
 ) {
   let leaveNodes = []
-  await serialExcutePromises(
+  const blockIds = await serialExcutePromises(
     treeNodes.map((node) => {
       return async () => {
         if (node.children) {
@@ -136,29 +160,35 @@ async function convertBookMarkTreeToNotionToggleBlock(
                       }
                     }
                   ]
-                  // children: []
                 }
               }
             ],
             parentBlockId
           )
           console.log({ nodeBlockIds, node })
-          return convertBookMarkTreeToNotionToggleBlock(
+          await convertBookMarkTreeToNotionToggleBlock(
             node.children,
             nodeBlockIds[0],
             handleNodesSameParent
           )
+          return nodeBlockIds
         } else {
           // bookmark
+          // validate url
+          const isUrlValid = node.extra.url?.match(/^https?/)
           leaveNodes.push({
             type: "bulleted_list_item",
             bulleted_list_item: {
               rich_text: [
                 {
-                  text: {
-                    content: node.title,
-                    link: { url: node.extra.url }
-                  },
+                  text: isUrlValid
+                    ? {
+                        content: node.title,
+                        link: { url: node.extra.url }
+                      }
+                    : {
+                        content: node.title
+                      },
                   annotations: {
                     color: "blue"
                   }
@@ -174,12 +204,29 @@ async function convertBookMarkTreeToNotionToggleBlock(
                     italic: true
                   }
                 }
-              ]
+              ].concat(
+                isUrlValid
+                  ? []
+                  : [
+                      {
+                        text: {
+                          content: `  invalid url (${node.extra.url})`
+                        },
+                        annotations: {
+                          color: "red"
+                        }
+                      }
+                    ]
+              )
             }
           })
+          return undefined
         }
       }
     })
   )
-  return leaveNodes.length && handleNodesSameParent(leaveNodes, parentBlockId)
+  const { nodeBlockIds } = leaveNodes.length
+    ? await handleNodesSameParent(leaveNodes, parentBlockId)
+    : { nodeBlockIds: [] }
+  return nodeBlockIds.concat(blockIds.flat().filter((i) => !!i))
 }

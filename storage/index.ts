@@ -14,14 +14,24 @@ export const getAuthInfo = () => {
 export const removeAuthInfoCache = () => {
   return storage.removeItem(AUTH_CACHE_KEY)
 }
-export const cacheNotionBlockIdByPageId = (
+export const cacheBookmarkNotionBlockIdByPageId = (
   pageId: string,
-  databaseId: string
+  bookmarkBlockIds: string[],
+  statusBlockId: string
 ) => {
-  return storage.setItem(DATABASE_ID_KEY + pageId, databaseId)
+  storage.setItem(DATABASE_ID_KEY + "-bookmark-status-" + pageId, statusBlockId)
+  storage.setItem(
+    DATABASE_ID_KEY + "-bookmark-content-" + pageId,
+    bookmarkBlockIds.join("|")
+  )
 }
-export const getNotionDatabaseIdByPageId = (pageId: string) => {
-  return storage.getItem(DATABASE_ID_KEY + pageId)
+export const getBookmarkBlockIdByPageId = (
+  pageId: string
+): [string, string[]] => {
+  return [
+    storage.getItem(DATABASE_ID_KEY + "-bookmark-status-" + pageId),
+    storage.getItem(DATABASE_ID_KEY + "-bookmark-content-" + pageId)?.split("|")
+  ]
 }
 
 export const clearAllStorage = () => {

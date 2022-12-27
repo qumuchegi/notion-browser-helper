@@ -1,0 +1,16 @@
+.login-succ {
+  h3.login-succ-title {
+    color: rgb(57, 208, 82);
+  }
+}
+.not-login-body {
+  display: flex;
+  padding: 10px 0;
+  flex-direction: column;
+  .login-url {
+    flex: 1;
+    background-color: aliceblue;
+    text-align: center;
+    text-decoration: none;
+  }
+}

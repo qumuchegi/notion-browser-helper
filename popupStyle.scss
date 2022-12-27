@@ -1,0 +1,25 @@
+.popup-body {
+  width: 400px;
+  height: fit-content;
+  padding: 30px 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  h2.popup-title {
+    background: linear-gradient(to right, green, red, yellow, blue);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .operation-list {
+    // background-color: aliceblue;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

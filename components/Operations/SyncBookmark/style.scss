@@ -1,0 +1,21 @@
+.sync-bookmark-entry {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  img.sync-bookmark-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+  a.operation-btn {
+    text-decoration: none;
+    color: #fff;
+    padding: 5px;
+    border-radius: 3px;
+    background-color: brown;
+  }
+  .operation-btn:hover {
+    cursor: pointer;
+    background-color: rgb(223, 96, 96);
+  }
+}

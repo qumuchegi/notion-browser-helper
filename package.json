@@ -1,0 +1,40 @@
+{
+  "name": "browser-bookmark-saver",
+  "displayName": "Browser bookmark saver",
+  "version": "0.0.0",
+  "description": "A basic Plasmo extension.",
+  "author": "qumuchege",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.8.0",
+    "@notionhq/client": "^2.2.3",
+    "@plasmohq/storage": "^0.13.1",
+    "antd": "^5.1.1",
+    "plasmo": "0.60.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-tabs": "^6.0.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@plasmohq/prettier-plugin-sort-imports": "3.6.0",
+    "@types/chrome": "0.0.202",
+    "@types/node": "18.11.9",
+    "@types/react": "18.0.25",
+    "@types/react-dom": "18.0.9",
+    "prettier": "2.7.1",
+    "typescript": "4.9.3"
+  },
+  "manifest": {
+    "host_permissions": [
+      "https://*/*"
+    ],
+    "permissions": [
+      "bookmarks"
+    ]
+  }
+}

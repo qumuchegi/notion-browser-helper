@@ -1,0 +1,83 @@
+body {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+.sync-bookmark-page {
+  padding: 0;
+  .page-header {
+    display: flex;
+    justify-content: center;
+
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    border-bottom: solid 1px #bbb;
+    background-color: white;
+    padding: 0;
+    height: 50px;
+    width: 100vw;
+    .title {
+      text-align: center;
+    }
+    // background-color: antiquewhite;
+  }
+  .bookmark-content {
+    padding: 20px;
+    max-height: 500px;
+    background-color: #eee;
+    overflow: scroll;
+    border-radius: 10px;
+    margin-top: 20px;
+
+    .bookmark-add-time {
+      color: #bbb;
+      font-size: 0.8em;
+      margin-left: 15px;
+    }
+
+    .bookmark-dir {
+    }
+    .bookmark-node {
+      .bookmark-url-title {
+        color: rgb(29, 123, 201);
+      }
+    }
+  }
+  div.load-more-search-result {
+    flex: 1;
+    text-align: center;
+    background-color: aqua;
+  }
+  .operation {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    .selected-page-url {
+      text-decoration: none;
+      margin-left: 10px;
+    }
+    div.check-target-page {
+      padding: 20px 0;
+    }
+    .operation-item {
+      margin-right: 10px;
+      min-width: calc(100vw / 3);
+      max-width: 50vw;
+      border-radius: 10px;
+      padding: 10px;
+      border: solid 1px #aaa;
+    }
+    input.search-notion-page-input {
+      // background-color: #fff;
+    }
+    p.search-tip-warn {
+      color: red;
+    }
+    p.search-tip-light-warn {
+      color: rgb(197, 111, 36);
+    }
+  }
+}

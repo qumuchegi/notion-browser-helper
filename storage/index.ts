@@ -1,9 +1,7 @@
-import { Storage } from "@plasmohq/storage"
-
-import { AUTH_CACHE_KEY, DATABASE_ID_KEY } from "~constant"
+import { AUTH_CACHE_KEY, DATABASE_ID_KEY, PAGE_ID_KEY } from "~constant"
 import type { OAuthInfo } from "~type"
 
-const storage = localStorage //new Storage()
+const storage = window.localStorage
 
 export const cacheAuthInfo = (oauthInfo: OAuthInfo) => {
   return storage.setItem(AUTH_CACHE_KEY, JSON.stringify(oauthInfo))
@@ -13,6 +11,23 @@ export const getAuthInfo = () => {
 }
 export const removeAuthInfoCache = () => {
   return storage.removeItem(AUTH_CACHE_KEY)
+}
+export const cacheSyncBookmarkPageId = (syncTargetNotionPageId: string) => {
+  const cachedPageIds = getAllSyncBookmarkToPageIds()
+  storage.setItem(
+    PAGE_ID_KEY,
+    [...new Set(cachedPageIds), syncTargetNotionPageId].join("|")
+  )
+}
+export const getAllSyncBookmarkToPageIds = () => {
+  const cached = storage.getItem(PAGE_ID_KEY)
+  return (cached || "").split("|").filter((i) => !!i)
+}
+export const checkCachedSyncBookmarkPageId = (
+  syncTargetNotionPageId: string
+) => {
+  const cachedPageIds = getAllSyncBookmarkToPageIds()
+  return cachedPageIds.findIndex((id) => id === syncTargetNotionPageId) !== -1
 }
 export const cacheBookmarkNotionBlockIdByPageId = (
   pageId: string,
@@ -25,13 +40,15 @@ export const cacheBookmarkNotionBlockIdByPageId = (
     bookmarkBlockIds.join("|")
   )
 }
-export const getBookmarkBlockIdByPageId = (
-  pageId: string
-): [string, string[]] => {
-  return [
-    storage.getItem(DATABASE_ID_KEY + "-bookmark-status-" + pageId),
-    storage.getItem(DATABASE_ID_KEY + "-bookmark-content-" + pageId)?.split("|")
-  ]
+export const getBookmarkBlockIdByPageId = (pageId: string) => {
+  return {
+    bookmarkBlockIds: storage
+      .getItem(DATABASE_ID_KEY + "-bookmark-content-" + pageId)
+      ?.split("|"),
+    statusBlockId: storage.getItem(
+      DATABASE_ID_KEY + "-bookmark-status-" + pageId
+    )
+  }
 }
 
 export const clearAllStorage = () => {

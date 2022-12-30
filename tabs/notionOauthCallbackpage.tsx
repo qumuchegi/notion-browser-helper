@@ -13,7 +13,7 @@ export default function NotionOauthCallbackPage() {
     try {
       const oauthInfoStr = window.location.search.replace("?oauthToQs=", "")
       const oauthObj = JSON.parse(decodeURIComponent(oauthInfoStr))
-      console.log({ oauthObj })
+      // console.log({ oauthObj })
       cacheLoginNotion(oauthObj)
     } catch (err) {
       alert(err)

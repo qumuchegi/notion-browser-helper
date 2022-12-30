@@ -57,7 +57,6 @@ export default function useSearchNotionPage() {
           )
         )
       })
-      console.log({ searchRes })
     },
     []
   )

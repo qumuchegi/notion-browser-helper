@@ -3,8 +3,8 @@ lockfileVersion: 5.4
 specifiers:
   '@ant-design/icons': ^4.8.0
   '@notionhq/client': ^2.2.3
+  '@plasmohq/messaging': ^0.0.2
   '@plasmohq/prettier-plugin-sort-imports': 3.6.0
-  '@plasmohq/storage': ^0.13.1
   '@types/chrome': 0.0.202
   '@types/node': 18.11.9
   '@types/react': 18.0.25
@@ -21,7 +21,7 @@ specifiers:
 dependencies:
   '@ant-design/icons': 4.8.0_biqbaboplfbrettd7655fr4n2y
   '@notionhq/client': 2.2.3
-  '@plasmohq/storage': 0.13.1_react@18.2.0
+  '@plasmohq/messaging': 0.0.2_react@18.2.0
   antd: 5.1.1_biqbaboplfbrettd7655fr4n2y
   plasmo: 0.60.2_biqbaboplfbrettd7655fr4n2y
   react: 18.2.0
@@ -1444,6 +1444,18 @@ packages:
     resolution: {integrity: sha512-LA6dfrBsLSgdOhgLJr8asBcs6gQd9ehb436DU2c1XecjYEmh5vkEr/YjxyECOg7Iz/AdtfUuBXEjH3GGS6qOMg==}
     dev: false
 
+  /@plasmohq/messaging/0.0.2_react@18.2.0:
+    resolution: {integrity: sha512-dM4dCfOKnIoMXkzG2N+IKCi+b/YFa6tpEZjMf4R8N5xWILI3Xwu2UMLz+TRRrc4XLJvVpFdL09IeGDh14E+Fvg==}
+    peerDependencies:
+      react: ^16.8.6 || ^17 || ^18
+    peerDependenciesMeta:
+      react:
+        optional: true
+    dependencies:
+      react: 18.2.0
+      webextension-polyfill: 0.10.0
+    dev: false
+
   /@plasmohq/parcel-bundler/0.4.4:
     resolution: {integrity: sha512-NrmVhuuXBxBc9812NuIjFQfQ2YJzkalKDpJ62e3pUkC6lA252BzfSUSX066ec+mcZRCOwDwTc60nFdtUVO0Iqg==}
     engines: {node: '>= 16.0.0', parcel: '>= 2.7.0'}
@@ -1730,18 +1742,6 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
-
-  /@plasmohq/storage/0.13.1_react@18.2.0:
-    resolution: {integrity: sha512-aKab6h4nPzj7tywhjtUiiqTQGzHt5dE408Uy5mV6+JMaL9UMavgleurL4bzDr4YvyibuL1vvTYwWqof7L8TFJQ==}
-    peerDependencies:
-      react: ^16.8.6 || ^17 || ^18
-    peerDependenciesMeta:
-      react:
-        optional: true
-    dependencies:
-      react: 18.2.0
-      webextension-polyfill: 0.10.0
-    dev: false
 
   /@pnpm/network.ca-file/1.0.2:
     resolution: {integrity: sha512-YcPQ8a0jwYU9bTdJDpXjMi7Brhkr1mXsXrUJvjqM2mQDgkRiz8jFaQGOdaLxgjtUfQgZhKy/O3cG/YwmgKaxLA==}

@@ -23,28 +23,37 @@ body {
     }
     // background-color: antiquewhite;
   }
-  .bookmark-content {
-    padding: 20px;
-    max-height: 500px;
-    background-color: #eee;
-    overflow: scroll;
-    border-radius: 10px;
-    margin-top: 20px;
-
-    .bookmark-add-time {
-      color: #bbb;
-      font-size: 0.8em;
-      margin-left: 15px;
+  .bookmark-preview {
+    position: relative;
+    .title {
+      text-align: center;
+      color: rgb(194, 24, 24);
     }
+    .bookmark-tree {
+      border: solid 1px #aaa;
+      padding: 20px;
+      max-height: 500px;
+      background-color: #eee;
+      overflow: scroll;
+      border-radius: 10px;
+      margin-top: 20px;
 
-    .bookmark-dir {
-    }
-    .bookmark-node {
-      .bookmark-url-title {
-        color: rgb(29, 123, 201);
+      .bookmark-add-time {
+        color: #bbb;
+        font-size: 0.8em;
+        margin-left: 15px;
+      }
+
+      .bookmark-dir {
+      }
+      .bookmark-node {
+        .bookmark-url-title {
+          color: rgb(29, 123, 201);
+        }
       }
     }
   }
+
   div.load-more-search-result {
     flex: 1;
     text-align: center;
@@ -62,6 +71,28 @@ body {
     div.check-target-page {
       padding: 20px 0;
     }
+    .bookmark-exporte-loaing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      border-radius: 10px;
+      background-color: rgba(10, 10, 10, 0.4);
+      .loaing-title {
+        font-size: 1.2em;
+        padding: 3px;
+        color: rgb(224, 66, 124);
+        background-color: #fff;
+        border-radius: 5px;
+      }
+    }
     .operation-item {
       margin-right: 10px;
       min-width: calc(100vw / 3);
@@ -69,15 +100,19 @@ body {
       border-radius: 10px;
       padding: 10px;
       border: solid 1px #aaa;
-    }
-    input.search-notion-page-input {
-      // background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
     p.search-tip-warn {
       color: red;
     }
     p.search-tip-light-warn {
       color: rgb(197, 111, 36);
+    }
+    p.tip-succ {
+      color: rgb(107, 167, 16);
     }
   }
 }

@@ -1,10 +1,22 @@
 import {
   DownloadOutlined,
+  ExclamationCircleOutlined,
   LinkOutlined,
   LoadingOutlined,
   SyncOutlined
 } from "@ant-design/icons"
-import { Button, Checkbox, Divider, Modal, Select, Space, Tree } from "antd"
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Divider,
+  Modal,
+  Select,
+  Space,
+  Spin,
+  Tooltip,
+  Tree
+} from "antd"
 import React, {
   useCallback,
   useEffect,
@@ -13,14 +25,24 @@ import React, {
   useTransition
 } from "react"
 
+import { sendToBackground } from "@plasmohq/messaging"
+
 import useSearchNotionPage from "~Hooks/useSerachNotionPage"
 import Logo from "~components/Logo"
 import parseBookmarksTreeToCheckboxTree from "~utils/parseBookmarksData"
 
 import "./styles/syncBookmark.scss"
 
-import { addBookmarkChangeListener } from "~background"
+import { setBookmarkNotionBlockIdByPageId } from "~background"
+import { addBookmarkListenerOnAllEvent } from "~bookmarkEvent"
+import {
+  cacheBookmarkNotionBlockIdByPageId,
+  cacheSyncBookmarkPageId,
+  getAllSyncBookmarkToPageIds,
+  getBookmarkBlockIdByPageId
+} from "~storage"
 import exportBookmarkToNotionPage from "~utils/notion/exportBookmarkToNotionPage"
+import { queueExcuteSyncBookmarkPromises } from "~utils/promise"
 
 export default function SyncBookmarkPage() {
   const [bookmarkTree, setbookmarkTree] = useState<
@@ -31,9 +53,13 @@ export default function SyncBookmarkPage() {
   const [selectedNotionPageId, setSelectedNotionPageId] = useState<string>()
   const [isSearchingPage, startSerachTransition] = useTransition()
   const [isCheckedToSync, setIsCheckedToSync] = useState(false)
+  const [syncBookmarkToPageIds, setSyncBookmarkToPageIds] = useState<string[]>(
+    []
+  )
+  const [isShowSyncBookmarkLoading, setIsShowSyncBookmarkLoading] =
+    useState(false)
   const getBookmarkTree = useCallback(() => {
     chrome.bookmarks.getTree((bookmarks) => {
-      console.log({ bookmarks })
       setbookmarkTree(bookmarks)
     })
   }, [])
@@ -46,7 +72,14 @@ export default function SyncBookmarkPage() {
   } = useSearchNotionPage()
   useEffect(() => {
     getBookmarkTree()
+    addBookmarkListenerOnAllEvent("display latest bookmark", () => {
+      getBookmarkTree()
+    })
   }, [getBookmarkTree])
+  useEffect(() => {
+    const allSyncTargetPageIds = getAllSyncBookmarkToPageIds()
+    setSyncBookmarkToPageIds(allSyncTargetPageIds)
+  }, [])
   const bookmarkTreeToCheckboxTree = useMemo(() => {
     return bookmarkTree.map((node) => parseBookmarksTreeToCheckboxTree(node))
   }, [bookmarkTree])
@@ -61,39 +94,70 @@ export default function SyncBookmarkPage() {
   const onSelectNotionPage = useCallback((pageId: string) => {
     setSelectedNotionPageId(pageId)
   }, [])
-
-  console.log({ searchResult })
   const selectedPageInfo = useMemo(() => {
     if (!selectedNotionPageId) {
       return null
     }
     return searchResult.filter((i) => i.pageId === selectedNotionPageId)[0]
   }, [selectedNotionPageId])
-  console.log({ selectedPageInfo })
   const syncBookmark = useCallback(() => {
     Modal.confirm({
       title: "Are you sure to sync bookmark?",
       onOk: async () => {
-        exportBookmarkToNotionPage({
-          notionPageId: selectedNotionPageId
-        })
-        addBookmarkChangeListener([
-          {
-            type: "bookmarkChange",
-            listener: (id, changeInfo) => {
-              console.log({ id, changeInfo })
+        setSyncBookmarkToPageIds((pre) => [...pre, selectedNotionPageId])
+
+        const exportBookmark = async () => {
+          setIsShowSyncBookmarkLoading(true)
+          let r = await exportBookmarkToNotionPage({
+            notionPageId: selectedNotionPageId,
+            setBookmarkNotionBlockIdByPageId: (
+              pageId,
+              bookmarkBlockIds,
+              statusBlockId
+            ) => {
+              cacheBookmarkNotionBlockIdByPageId(
+                pageId,
+                bookmarkBlockIds,
+                statusBlockId
+              )
+              sendToBackground({
+                name: "add_sync_bookmark_target_page",
+                body: {
+                  pageId: selectedNotionPageId,
+                  bookmarkBlockIds,
+                  statusBlockId
+                }
+              })
+            },
+            getBookmarkNotionBlockIdByPageId: (pageId) => {
+              return getBookmarkBlockIdByPageId(pageId)
             }
-          },
-          {
-            type: "bookmarkCreate",
-            listener: (id, bookmark) => {
-              console.log({ id, bookmark })
-            }
-          }
-        ])
+          })
+          setIsShowSyncBookmarkLoading(false)
+          return r
+        }
+
+        cacheSyncBookmarkPageId(selectedNotionPageId)
+        queueExcuteSyncBookmarkPromises(() => exportBookmark())
       }
     })
   }, [selectedNotionPageId])
+  const selectNotionPageLink = useMemo(() => {
+    if (!selectedPageInfo) {
+      return null
+    }
+    return (
+      <a
+        href={selectedPageInfo.pageUrl}
+        target="_blank"
+        className="selected-page-url">
+        {selectedPageInfo.title}
+        <span style={{ color: "#bbb", fontSize: "0.9em" }}>
+          (press for navigation to notion page)
+        </span>
+      </a>
+    )
+  }, [selectedPageInfo])
   return (
     <div className="sync-bookmark-page">
       <div className="page-header">
@@ -101,21 +165,30 @@ export default function SyncBookmarkPage() {
         <h1 className="title">sync bookmark</h1>
       </div>
       <div className="operation">
-        <div className="operation-item">
-          <h3>select a notion page</h3>
-          <p>
-            automaticlly keep bookmark syncronized to notion page instead of
-            manual export.
-          </p>
-          <p className="search-tip-warn" style={{ fontWeight: "bolder" }}>
-            note ⚠️ !!: make sure that selected page is your target page, the
-            content of bookmark will override the original content of the
-            selected page
-          </p>
+        <div className="operation-item" style={{ position: "relative" }}>
+          {isShowSyncBookmarkLoading && (
+            <div className="bookmark-exporte-loaing">
+              <Spin />
+              <div className="loaing-title">
+                bookmarks are being exported to notion, you can check the
+                progress on notion page: {selectNotionPageLink}
+              </div>
+            </div>
+          )}
+
+          <h2>
+            sync bookmark to notion page
+            <Tooltip
+              placement="topLeft"
+              title="automaticlly keep bookmark syncronized to notion page instead of
+            manual export.">
+              <ExclamationCircleOutlined style={{ marginLeft: "10px" }} />
+            </Tooltip>
+          </h2>
           <div>
+            <span>search for notion page:{"  "}</span>
             <Select
               showSearch
-              placeholder="search for notion page"
               className="search-notion-page-input"
               allowClear
               value={searchPageValue}
@@ -168,87 +241,100 @@ export default function SyncBookmarkPage() {
               }}
             />
             {isSearching && <LoadingOutlined style={{ marginLeft: "10px" }} />}
-            {selectedPageInfo && (
-              <div className="check-target-page">
-                <Checkbox
-                  checked={isCheckedToSync}
-                  onChange={(e) => setIsCheckedToSync(e.target.checked)}
-                />
-                <span>make sure it is your target page:</span>
-                <a
-                  href={selectedPageInfo.pageUrl}
-                  target="_blank"
-                  className="selected-page-url">
-                  {selectedPageInfo.title}
-                  <span style={{ color: "#bbb", fontSize: "0.9em" }}>
-                    (press for navigation to notion page)
-                  </span>
-                </a>
-              </div>
-            )}
+            {selectedPageInfo &&
+              !syncBookmarkToPageIds.includes(selectedNotionPageId) && (
+                <div className="check-target-page">
+                  <Checkbox
+                    checked={isCheckedToSync}
+                    onChange={(e) => setIsCheckedToSync(e.target.checked)}
+                  />
+                  <span>make sure it is your target page:</span>
+                  {selectNotionPageLink}
+                </div>
+              )}
             <div>
               <Button
                 onClick={syncBookmark}
                 type="primary"
                 style={{ marginLeft: "0px", marginTop: "20px" }}
                 icon={<SyncOutlined />}
-                disabled={!selectedNotionPageId || !isCheckedToSync}>
+                disabled={
+                  !selectedNotionPageId ||
+                  !isCheckedToSync ||
+                  syncBookmarkToPageIds.includes(selectedNotionPageId)
+                }>
                 sync bookmark to this page
               </Button>
+              {syncBookmarkToPageIds.includes(selectedNotionPageId) && (
+                <Alert
+                  message={
+                    <p>
+                      You have set this page as the result page for bookmark
+                      synchronization, now it will listen the change of bookmark
+                      then automaticly sync to notion page:
+                      {selectNotionPageLink}
+                    </p>
+                  }
+                  type="success"
+                  style={{ margin: "10px 0" }}
+                  showIcon
+                  closable
+                />
+              )}
             </div>
           </div>
-          <p className="search-tip-light-warn">
-            can't search your target page? maybe you have not authorize this
+          <Alert
+            message="can't search your target page? maybe you have not authorize this
             notion page. Please login out and re login in and authorize the
-            page.
-          </p>
-        </div>
-        <div className="operation-item">
-          <Button type="primary" icon={<DownloadOutlined />}>
-            export bookmark
-          </Button>
+            page."
+            type="info"
+            style={{ margin: "10px 0" }}
+            showIcon
+          />
         </div>
       </div>
-      <h2>bookmark preview:</h2>
-      <div className="bookmark-content">
-        <div>
-          <Tree
-            treeData={bookmarkTreeToCheckboxTree}
-            selectable={false}
-            defaultExpandAll={true}
-            defaultExpandParent
-            titleRender={(node) => {
-              const isDir = !!node.children
-              if (isDir) {
+      <div className="bookmark-preview">
+        <h2 className="title">bookmark preview</h2>
+        <div className="bookmark-tree">
+          <div>
+            <Tree
+              treeData={bookmarkTreeToCheckboxTree}
+              selectable={false}
+              defaultExpandAll={true}
+              defaultExpandParent
+              titleRender={(node) => {
+                const isDir = !!node.children
+                if (isDir) {
+                  return (
+                    <div className="bookmark-dir">
+                      {node.title}
+                      <span className="bookmark-add-time">
+                        added at{" "}
+                        {new Date(node.extra.addTime).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )
+                }
                 return (
-                  <div className="bookmark-dir">
-                    {node.title}
-                    <span className="bookmark-add-time">
-                      added at{" "}
-                      {new Date(node.extra.addTime).toLocaleDateString()}
-                    </span>
+                  <div className="bookmark-node">
+                    <a
+                      href={node.extra?.url}
+                      className="bookmark-url-title"
+                      target="_blank">
+                      <LinkOutlined
+                        style={{ fontSize: "1rem", marginRight: "10px" }}
+                      />
+                      {node.title}
+                      {"  "}
+                      <span className="bookmark-add-time">
+                        added at {new Date(node.extra.addTime).toLocaleString()}
+                      </span>
+                    </a>
                   </div>
                 )
-              }
-              return (
-                <div className="bookmark-node">
-                  <a
-                    href={node.extra?.url}
-                    className="bookmark-url-title"
-                    target="_blank">
-                    <LinkOutlined
-                      style={{ fontSize: "1rem", marginRight: "10px" }}
-                    />
-                    {node.title}
-                    {"  "}
-                    <span className="bookmark-add-time">
-                      added at {new Date(node.extra.addTime).toLocaleString()}
-                    </span>
-                  </a>
-                </div>
-              )
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

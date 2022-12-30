@@ -168,10 +168,12 @@ export default function SyncBookmarkPage() {
         <div className="operation-item" style={{ position: "relative" }}>
           {isShowSyncBookmarkLoading && (
             <div className="bookmark-exporte-loaing">
-              <Spin />
               <div className="loaing-title">
-                bookmarks are being exported to notion, you can check the
-                progress on notion page: {selectNotionPageLink}
+                <Spin />
+                <p>
+                  bookmarks are being exported to notion, you can check the
+                  progress on notion page: {selectNotionPageLink}
+                </p>
               </div>
             </div>
           )}

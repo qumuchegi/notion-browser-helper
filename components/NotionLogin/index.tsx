@@ -31,7 +31,7 @@ export default function NotionLogin({
             justifyContent: "center",
             marginTop: "30px"
           }}>
-          <Button onClick={loginOut}>login out</Button>
+          <Button onClick={() => loginOut(() => {})}>login out</Button>
         </div>
       </div>
     )

@@ -32,10 +32,13 @@ export default function useNotionAuth() {
     initNotionClient(oauthInfo.access_token)
   }, [])
 
-  const loginOut = useCallback(async () => {
+  const loginOut = useCallback(async (onLoginOut?: () => void) => {
     // await removeAuthInfoCache()
     clearAllStorage()
     killNotionClient()
+    onLoginOut?.()
+    setIsAuthed(false)
+    setOauthInfo(null)
     return true
   }, [])
   return {

@@ -22,6 +22,10 @@ how to install extension on browser? follow these steps:
 3. click 'Load unpacked extension', select the unZiped extension.
 4. done
 
+for Firefox, select this [package](./packages_to_open/firefox-mv2-prod.zip)
+
+for Edge, select this [package](./packages_to_open/edge-mv3-prod.zip)
+
 ## dev
 
 first, this project depends on Notion authorization, so we must have a server to receive Notion Oauth2.0 callback.For this, I add a server-rendered page on my Next.js project that is hosted by vercel, you can also do the same.My page code like below, it handles the Notion account info and token, we should persist this token so that we can send some request to Notion to read and write some Notion pages, such as send it with cookie:

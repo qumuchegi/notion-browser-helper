@@ -3,7 +3,7 @@
 # browser extension for Notion
 
 connect browser with Notion.
-This project start with [Plasmo](https://docs.plasmo.com/)
+This project bootstraped by [Plasmo](https://docs.plasmo.com/)
 
 ## features till now
 
@@ -11,39 +11,67 @@ This project start with [Plasmo](https://docs.plasmo.com/)
 
   ...
 
+## use
+
+download this [package](./packages_to_open//chrome-mv3-prod.zip), then unZip it and install it on Chrome like other Chrome extension.
+
+how to install extension on browser? follow these steps:
+
+1. open 'chrome://extensions/' on Chrome
+2. open 'develop mode'
+3. click 'Load unpacked extension', select the unZiped extension.
+4. done
+
 ## dev
 
-first, this project depend on Notion authorization, so we must have a server to receive Notion Oauth2.0 callback.For this, I add a server-rendered page on my Next.js project that is hosted by vercel, you can also do the same.My page code like:
+first, this project depends on Notion authorization, so we must have a server to receive Notion Oauth2.0 callback.For this, I add a server-rendered page on my Next.js project that is hosted by vercel, you can also do the same.My page code like below, it handles the Notion account info and token, we should persist this token so that we can send some request to Notion to read and write some Notion pages, such as send it with cookie:
 
 ```javascript
 import axios from "axios"
+//@ts-ignore
+import cookie from "cookie"
 import {
   GetServerSideProps,
   GetServerSidePropsContext,
   GetServerSidePropsResult
 } from "next"
+import Image from "next/image"
 import * as React from "react"
 
-export default function Forward(props: any) {
+import bookmarkExtensionIcon from "../assets/img/bookmark-extersion-icon.png"
+
+export default function NotionAuth(props: any) {
   React.useEffect(() => {
-    window.postMessage(JSON.stringify(props), "*")
+    const t = setTimeout(() => {
+      window.close()
+    }, 4000)
+    return () => {
+      clearTimeout(t)
+    }
   }, [props])
-  return <div>forward to browser bookmark saver...</div>
+  return (
+    <div
+      style={{
+        backgroundColor: "#fff",
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column"
+      }}>
+      <Image src={bookmarkExtensionIcon} width={100} height={100} alt="" />
+      <h1 style={{ color: "rgb(54, 212, 70)" }}>success to login in Notion!</h1>
+      <h2>
+        Now try to click the icon in the upper right corner of your browser to
+        open the pop-up window
+      </h2>
+    </div>
+  )
 }
-
-const notion_client_id = process.env.notion_client_id
-const notion_client_secret = process.env.notion_client_secret
-
 export async function getServerSideProps(
   ctx: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<any>> {
-  const qs = Object.entries(ctx.query || {}).reduce((str, [k, v]) => {
-    if (!str) {
-      return k + "=" + v
-    }
-    return str + "&" + k + "=" + v
-  }, "")
-  console.log({ qs })
   let oauthInfo = {}
   try {
     const res = await axios({
@@ -52,11 +80,12 @@ export async function getServerSideProps(
       data: {
         grant_type: "authorization_code",
         code: ctx.query?.code
+        // redirect_uri: "https://www.chegi.fun",
       },
       headers: {
         "Content-Type": "application/json",
         Authorization: `Basic ${Buffer.from(
-          `${notion_client_id}:${notion_client_secret}`
+          `${process.env.notion_auth_client_id_for_bookmark_ext}:${process.env.notion_auth_client_secret_for_bookmark_ext}`
         ).toString("base64")}`
       }
     })
@@ -75,19 +104,16 @@ export async function getServerSideProps(
   } catch (err) {
     console.error(err)
   }
-  const oauthToQs = JSON.stringify(oauthInfo)
 
+  ctx.res.setHeader(
+    "Set-Cookie",
+    cookie.serialize("oauthInfo", JSON.stringify(oauthInfo), {
+      httpOnly: false,
+      hostOnly: false
+    })
+  )
   return {
-    props: {
-      oauthInfo
-    },
-    redirect: {
-      //TODO: destination 应该需要在发起 notion 授权时带上，然后这歌页面接受，再在这里返回，而不是写死
-      destination: `chrome-extension://${extensionId}/tabs/notionOauthCallbackpage.html?oauthToQs=${encodeURIComponent(
-        oauthToQs
-      )}`,
-      permanent: true
-    }
+    props: {}
   }
 }
 ```

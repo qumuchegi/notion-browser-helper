@@ -28,7 +28,27 @@ for Firefox, select this [package](./packages_to_open/firefox-mv2-prod.zip)
 
 ## dev
 
-first, this project depends on Notion authorization, so we must have a server to receive Notion Oauth2.0 callback.For this, I add a server-rendered page on my Next.js project that is hosted by vercel, you can also do the same.My page code like below, it handles the Notion account info and token, we should persist this token so that we can send some request to Notion to read and write some Notion pages, such as send it with cookie:
+### pre-requist
+
+#### 1.Notion OAuth2.0
+
+first, we set a Notion integration to get OAuth2.0 client token that let our program is access to Notion data.Go to [My integration - Notion](https://www.notion.so/my-integrations) to create a new integration.
+
+**note**:
+
+1. we select 'Public integration' for 'Integration type'
+   <img src="./README_ASSETS/1.png" width="300px"/>
+
+2. for 'Redirect URIs', we input the url of Notion OAuth2.0 callback page, which will be explained bellow in sencod point.
+   <img src="./README_ASSETS/2.png" width="300px"/>
+
+after we finish to create integration, we get these 3 value: **OAuth client ID**, **OAuth client secret**, Authorization URL. we will use **Auth client ID** and **OAuth client secret** in programing.For hoow to use them, can reference this [Notion devlopment doc](https://developers.notion.com/docs/authorization#set-up-the-auth-flow-for-a-public-integration).But note!!!! there is a big issue from Notion official api, we should not set param `redirect url`, I found it after very a long time search.
+
+ <img src="./README_ASSETS/4.png" width="300px"/>
+
+#### 2. A callback page for Notion Auth2.0
+
+this project depends on Notion authorization, so we must have a server to receive Notion Oauth2.0 callback.For this, I add a server-rendered page on my Next.js project that is hosted by vercel, you can also do the same.My page code like below, it handles the Notion account info and token, we should persist this token so that we can send some request to Notion to read and write some Notion pages, such as send it with cookie:
 
 ```javascript
 import axios from "axios"
@@ -122,11 +142,15 @@ export async function getServerSideProps(
 }
 ```
 
+### start to dev
+
 start the local dev server
 
 ```shell
 $pnpm dev
 ```
+
+referce [Plasmo doc](https://docs.plasmo.com/framework/workflows/dev)
 
 ## some special logic in code
 

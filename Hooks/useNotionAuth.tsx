@@ -34,6 +34,7 @@ export default function useNotionAuth() {
     const checkAuthNotion = async () => {
       try {
         const value = getAuthInfo()
+        cacheLoginNotion(value)
         setIsAuthed(!!value)
         setOauthInfo(value)
       } catch (err) {
@@ -41,7 +42,7 @@ export default function useNotionAuth() {
       }
     }
     checkAuthNotion()
-  }, [])
+  }, [cacheLoginNotion])
 
   const loginIn = useCallback(() => {
     authWinRef.current = window.open(

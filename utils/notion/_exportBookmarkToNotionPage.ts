@@ -28,6 +28,7 @@ export const _exportBookmarkToNotionPage: AccessNotionWrappedFn<
   Params,
   void
 > = async (client, params) => {
+  console.log({ client })
   const {
     notionPageId,
     setBookmarkNotionBlockIdByPageId,

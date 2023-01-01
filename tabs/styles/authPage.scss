@@ -1,0 +1,20 @@
+body {
+  margin: 0;
+}
+.not-login-module,
+.login-succ-module {
+  width: 100vw;
+  height: 100vh;
+  flex-direction: column;
+  background-color: aliceblue;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-succ-module {
+  background-color: #fff;
+  .login-succ-title {
+    color: rgb(54, 212, 70);
+  }
+}

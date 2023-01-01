@@ -35,7 +35,8 @@
     ],
     "permissions": [
       "bookmarks",
-      "storage"
+      "storage",
+      "cookies"
     ]
   }
 }

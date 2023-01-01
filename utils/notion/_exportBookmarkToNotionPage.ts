@@ -55,7 +55,7 @@ export const _exportBookmarkToNotionPage: AccessNotionWrappedFn<
             rich_text: [
               {
                 text: {
-                  content: "loading bookmark from browser, wait for a while 🔄"
+                  content: "🔄 loading bookmark from browser, wait for a while"
                 },
                 type: "text",
                 annotations: { color: "orange" }
@@ -94,7 +94,7 @@ export const _exportBookmarkToNotionPage: AccessNotionWrappedFn<
         rich_text: [
           {
             text: {
-              content: `loaded bookmark complete! ✅`
+              content: `✅ loaded bookmark complete!`
             },
             annotations: { color: "green_background" }
           },

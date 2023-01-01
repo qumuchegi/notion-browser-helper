@@ -12,7 +12,7 @@ export default function NotionLogin({
   notLoginFallback?: JSX.Element
   loginedRender?: JSX.Element
 }) {
-  const { isAuthed, oauthInfo, loginOut } = useNotionAuth()
+  const { isAuthed, oauthInfo, loginIn, loginOut } = useNotionAuth()
   if (isAuthed === null) {
     return (
       <div className="check-login-status">checking login status..........</div>
@@ -40,14 +40,18 @@ export default function NotionLogin({
     <div className="not-login-body">
       <Button
         type="link"
-        href={
-          "https://api.notion.com/v1/oauth/authorize?" +
-          "owner=user" +
-          `&client_id=${process.env.NOTION_AUTH_CLIENT_SECRET}` +
-          "&response_type=code"
-        }
+        // href={
+        //   "https://api.notion.com/v1/oauth/authorize?" +
+        //   "owner=user" +
+        //   `&client_id=${process.env.NOTION_AUTH_CLIENT_SECRET}` +
+        //   "&response_type=code"
+        // }
+        onClick={() => {
+          window.open("/tabs/notionAuthPage.html")
+        }}
         className="login-url"
-        target="_blank">
+        // target="_blank"
+      >
         Login In Notion
       </Button>
       {notLoginFallback}

@@ -1,5 +1,3 @@
-import { serialExcutePromises } from "./promise"
-
 /**
  * 1. 批量执行
  */

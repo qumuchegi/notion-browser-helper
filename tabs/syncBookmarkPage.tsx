@@ -33,7 +33,6 @@ import parseBookmarksTreeToCheckboxTree from "~utils/parseBookmarksData"
 
 import "./styles/syncBookmark.scss"
 
-import { setBookmarkNotionBlockIdByPageId } from "~background"
 import { addBookmarkListenerOnAllEvent } from "~bookmarkEvent"
 import {
   cacheBookmarkNotionBlockIdByPageId,

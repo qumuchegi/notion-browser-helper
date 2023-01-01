@@ -12,7 +12,7 @@ export default function SyncBookmark() {
       <a
         className="operation-btn"
         target="_blank"
-        href={`chrome-extension://${test_extension_id}/tabs/syncBookmarkPage.html`}>
+        href={`/tabs/syncBookmarkPage.html`}>
         sync bookmark to notion &gt;{" "}
       </a>
     </div>

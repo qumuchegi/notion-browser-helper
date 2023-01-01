@@ -13,7 +13,7 @@ This project bootstraped by [Plasmo](https://docs.plasmo.com/)
 
 ## use
 
-download this [package](./packages_to_open//chrome-mv3-prod.zip), then unZip it and install it on Chrome like other Chrome extension.
+download this [package](./packages_to_open/chrome-mv3-prod.zip), then unZip it and install it on Chrome like other Chrome extension.
 
 how to install extension on browser? follow these steps:
 
@@ -22,9 +22,9 @@ how to install extension on browser? follow these steps:
 3. click 'Load unpacked extension', select the unZiped extension.
 4. done
 
-for Firefox, select this [package](./packages_to_open/firefox-mv2-prod.zip)
+for Edge/Brave/Opera which based on Chromium, select this [package](./packages_to_open/chrome-mv3-prod.zip)
 
-for Edge, select this [package](./packages_to_open/edge-mv3-prod.zip)
+for Firefox, select this [package](./packages_to_open/firefox-mv2-prod.zip)
 
 ## dev
 

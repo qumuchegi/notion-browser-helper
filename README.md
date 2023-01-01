@@ -127,3 +127,139 @@ start the local dev server
 ```shell
 $pnpm dev
 ```
+
+## some special logic in code
+
+1. queue the response to update of bookmark, because updates can be frequent and there can be many updates in a short period of time. We should send these updates in serial to avoid the conflict write on Notion.
+
+   <details>
+   <summary> code </summary>
+
+   ```js
+   // utils/promise.ts
+   class DynamicSerialExcutePromise<P extends () => Promise<any>> {
+     private preExcutionPromise: Promise<any>
+     public serialExcute = async (promiseLoader: P) => {
+       await this.preExcutionPromise
+       this.preExcutionPromise = promiseLoader()
+       return this.preExcutionPromise
+     }
+   }
+
+   const dynamicQueueExcuteSyncBookmarkPromises = new DynamicSerialExcutePromise()
+   export const queueExcuteSyncBookmarkPromises = (
+     syncBookmarkPromiseLoader: () => Promise<any>
+   ) => {
+     return dynamicQueueExcuteSyncBookmarkPromises.serialExcute(
+       syncBookmarkPromiseLoader
+     )
+   }
+   ```
+
+   </details>
+
+2. Notion API allows devloper to send max 2 layer of nodes to create block tree, so we should split our tree and send it layer by layer.
+
+   <details>
+   <summary> code </summary>
+
+   ```javascript
+   // utils/notion/_exportBookmarkToNotionPage.ts
+   async function convertBookMarkTreeToNotionToggleBlock(
+     treeNodes: BookmarkTreeNode[],
+     parentBlockId: string,
+     handleNodesSameParent: (
+       blocks: BlockObjectRequest[],
+       parentBlockId: string
+     ) => Promise<{ nodeBlockIds: string[] }>
+   ) {
+     let leaveNodes = []
+     const blockIds = await serialExcutePromises(
+       treeNodes.map((node) => {
+         return async () => {
+           if (node.children) {
+             // bookmark directory
+             const { nodeBlockIds } = await handleNodesSameParent(
+               [
+                 {
+                   type: "toggle",
+                   toggle: {
+                     rich_text: [
+                       {
+                         text: {
+                           content: node.title
+                         }
+                       }
+                     ]
+                   }
+                 }
+               ],
+               parentBlockId
+             )
+             await convertBookMarkTreeToNotionToggleBlock(
+               node.children,
+               nodeBlockIds[0],
+               handleNodesSameParent
+             )
+             return nodeBlockIds
+           } else {
+             // bookmark
+             // validate url
+             const isUrlValid = node.extra.url?.match(/^https?/)
+             leaveNodes.push({
+               type: "bulleted_list_item",
+               bulleted_list_item: {
+                 rich_text: [
+                   {
+                     text: isUrlValid
+                       ? {
+                           content: node.title,
+                           link: { url: node.extra.url }
+                         }
+                       : {
+                           content: node.title
+                         },
+                     annotations: {
+                       color: "blue"
+                     }
+                   },
+                   {
+                     text: {
+                       content: `    add at ${new Date(
+                         node.extra.addTime
+                       ).toLocaleDateString()}`
+                     },
+                     annotations: {
+                       color: "gray",
+                       italic: true
+                     }
+                   }
+                 ].concat(
+                   isUrlValid
+                     ? []
+                     : [
+                         {
+                           text: {
+                             content: `  invalid url (${node.extra.url})`
+                           },
+                           annotations: {
+                             color: "red"
+                           }
+                         }
+                       ]
+                 )
+               }
+             })
+             return undefined
+           }
+         }
+       })
+     )
+     const { nodeBlockIds } = leaveNodes.length
+       ? await handleNodesSameParent(leaveNodes, parentBlockId)
+       : { nodeBlockIds: [] }
+     return nodeBlockIds.concat(blockIds.flat().filter((i) => !!i))
+   }
+   ```
+
+   </details>

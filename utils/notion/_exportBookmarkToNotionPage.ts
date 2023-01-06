@@ -84,7 +84,7 @@ export const _exportBookmarkToNotionPage: AccessNotionWrappedFn<
     )
     // remove loading on nottion page
     addLoadingBlockId = addLoadingBlockRes.results[0].id
-    setBookmarkNotionBlockIdByPageId(
+    await setBookmarkNotionBlockIdByPageId(
       notionPageId,
       bookmarkBlockIds,
       addLoadingBlockId

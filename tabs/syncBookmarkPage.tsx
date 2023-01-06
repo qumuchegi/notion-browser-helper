@@ -119,7 +119,7 @@ export default function SyncBookmarkPage() {
                 bookmarkBlockIds,
                 statusBlockId
               )
-              sendToBackground({
+              return sendToBackground({
                 name: "add_sync_bookmark_target_page",
                 body: {
                   pageId: selectedNotionPageId,

@@ -7,13 +7,13 @@ import { getAuthInfo } from "~storage"
 
 let notionClient
 
-export const initNotionClient = (authToken: string) => {
+export const initNotionClient = async (authToken: string) => {
   if (!notionClient) {
     notionClient = new Client({
       auth: authToken
     })
   }
-  sendToBackground({
+  await sendToBackground({
     name: "init_notion_client",
     body: {
       notionAccessToken: authToken
@@ -50,7 +50,7 @@ export const accessNotionWrapper = <T, R>(
       )
     }
 
-    const client = initNotionClient(accessToken)
+    const client = await initNotionClient(accessToken)
     if (!client) {
       return
     }

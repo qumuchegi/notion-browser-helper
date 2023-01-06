@@ -11,18 +11,18 @@ export default function useNotionAuth() {
   const authWinRef = useRef<Window>()
   const cacheLoginNotion = useCallback((oauthInfo: OAuthInfo) => {
     cacheAuthInfo(oauthInfo)
-    initNotionClient(oauthInfo.access_token)
+    return initNotionClient(oauthInfo.access_token)
   }, [])
   // check is authed by first login cookie
   useEffect(() => {
     chrome.cookies.get(
       { url: process.env.NOTION_AUTH_CALLBACK_PAGE_URL, name: "oauthInfo" },
-      (cookies) => {
+      async (cookies) => {
         try {
           console.log({ cookies })
           const authInfoObj = JSON.parse(decodeURIComponent(cookies.value))
           setOauthInfo(authInfoObj)
-          cacheLoginNotion(authInfoObj)
+          await cacheLoginNotion(authInfoObj)
           setIsAuthed(!!authInfoObj)
         } catch (err) {
           console.error(err)
@@ -35,7 +35,7 @@ export default function useNotionAuth() {
     const checkAuthNotion = async () => {
       try {
         const value = getAuthInfo()
-        cacheLoginNotion(value)
+        await cacheLoginNotion(value)
         setIsAuthed(!!value)
         setOauthInfo(value)
       } catch (err) {

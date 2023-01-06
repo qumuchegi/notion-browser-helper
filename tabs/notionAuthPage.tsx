@@ -46,20 +46,6 @@ export default function NotionAuthPage() {
         onClick={() => window.close()}>
         Login In Notion
       </Button>
-      {/* <Button
-        onClick={() => {
-          chrome.cookies.get(
-            { url: "https://www.chegi.fun", name: "oauthInfo" },
-            (cookies) => {
-              console.log({
-                cookies,
-                value: JSON.parse(decodeURIComponent(cookies.value))
-              })
-            }
-          )
-        }}>
-        try to get cookies
-      </Button> */}
     </div>
   )
 }

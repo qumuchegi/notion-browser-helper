@@ -16,9 +16,10 @@ export default function useNotionAuth() {
   // check is authed by first login cookie
   useEffect(() => {
     chrome.cookies.get(
-      { url: "https://www.chegi.fun", name: "oauthInfo" },
+      { url: process.env.NOTION_AUTH_CALLBACK_PAGE_URL, name: "oauthInfo" },
       (cookies) => {
         try {
+          console.log({ cookies })
           const authInfoObj = JSON.parse(decodeURIComponent(cookies.value))
           setOauthInfo(authInfoObj)
           cacheLoginNotion(authInfoObj)
@@ -60,7 +61,10 @@ export default function useNotionAuth() {
     clearAllStorage()
     killNotionClient()
     // update auth suotrce
-    chrome.cookies.remove({ url: "https://www.chegi.fun", name: "oauthInfo" })
+    chrome.cookies.remove({
+      url: process.env.NOTION_AUTH_CALLBACK_PAGE_URL,
+      name: "oauthInfo"
+    })
     onLoginOut?.()
 
     return true

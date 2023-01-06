@@ -2,8 +2,7 @@
 
 # browser extension for Notion
 
-connect browser with Notion.
-This project bootstraped by [Plasmo](https://docs.plasmo.com/)
+connect browser with Notion, and bootstraped by [Plasmo](https://docs.plasmo.com/)
 
 ## features till now
 
@@ -40,7 +39,18 @@ first, we set a Notion integration to get OAuth2.0 client token that let our pro
    <img src="./README_ASSETS/1.png" width="300px"/>
 
 2. for 'Redirect URIs', we input the url of Notion OAuth2.0 callback page, which will be explained bellow in sencod point.
+
    <img src="./README_ASSETS/2.png" width="300px"/>
+
+3. create .env file at root dir, then write these 2 env variable:
+
+```shell
+NOTION_AUTH_CLIENT_SECRET = xxxxxxx
+NOTION_AUTH_CALLBACK_PAGE_URL = https://xxxxxx
+```
+
+`NOTION_AUTH_CLIENT_SECRET ` is the Notion OAuth2.0 client secret,
+`NOTION_AUTH_CALLBACK_PAGE_URL` is the domain of Notion oauth callback page.
 
 after we finish to create integration, we get these 3 value: **OAuth client ID**, **OAuth client secret**, Authorization URL. we will use **Auth client ID** and **OAuth client secret** in programing.For hoow to use them, can reference this [Notion devlopment doc](https://developers.notion.com/docs/authorization#set-up-the-auth-flow-for-a-public-integration).But note!!!! there is a big issue from Notion official api, we should not set param `redirect url`, I found it after very a long time search.
 
@@ -104,7 +114,6 @@ export async function getServerSideProps(
       data: {
         grant_type: "authorization_code",
         code: ctx.query?.code
-        // redirect_uri: "https://www.chegi.fun",
       },
       headers: {
         "Content-Type": "application/json",
@@ -150,7 +159,7 @@ start the local dev server
 $pnpm dev
 ```
 
-referce [Plasmo doc](https://docs.plasmo.com/framework/workflows/dev)
+reference [Plasmo doc](https://docs.plasmo.com/framework/workflows/dev)
 
 ## some special logic in code
 

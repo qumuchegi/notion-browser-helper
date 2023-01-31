@@ -33,6 +33,8 @@ import parseBookmarksTreeToCheckboxTree from "~utils/parseBookmarksData"
 
 import "./styles/syncBookmark.scss"
 
+import icLink from "data-base64:~assets/link.png"
+
 import { addBookmarkListenerOnAllEvent } from "~bookmarkEvent"
 import {
   cacheBookmarkNotionBlockIdByPageId,
@@ -41,6 +43,7 @@ import {
   getBookmarkBlockIdByPageId
 } from "~storage"
 import exportBookmarkToNotionPage from "~utils/notion/exportBookmarkToNotionPage"
+import retriveNotionPages, { PageInfo } from "~utils/notion/retrivePage"
 import { queueExcuteSyncBookmarkPromises } from "~utils/promise"
 
 export default function SyncBookmarkPage() {
@@ -55,6 +58,7 @@ export default function SyncBookmarkPage() {
   const [syncBookmarkToPageIds, setSyncBookmarkToPageIds] = useState<string[]>(
     []
   )
+  const [syncBookmarkToPages, setSyncBookmarkToPages] = useState<PageInfo[]>([])
   const [isShowSyncBookmarkLoading, setIsShowSyncBookmarkLoading] =
     useState(false)
   const getBookmarkTree = useCallback(() => {
@@ -77,6 +81,12 @@ export default function SyncBookmarkPage() {
   }, [getBookmarkTree])
   useEffect(() => {
     const allSyncTargetPageIds = getAllSyncBookmarkToPageIds()
+    const queryPageInfo = async () => {
+      setSyncBookmarkToPages(
+        await retriveNotionPages({ pageIds: allSyncTargetPageIds })
+      )
+    }
+    queryPageInfo()
     setSyncBookmarkToPageIds(allSyncTargetPageIds)
   }, [])
   const bookmarkTreeToCheckboxTree = useMemo(() => {
@@ -293,6 +303,34 @@ export default function SyncBookmarkPage() {
             showIcon
           />
         </div>
+        {!!syncBookmarkToPages.length && (
+          <div className="operation-item">
+            <h2>Notion pages receive bookmark synchronization</h2>
+            <div>
+              {syncBookmarkToPages.map((b, i) => (
+                <div key={i}>
+                  <a
+                    href={b.url}
+                    target="_blank"
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center"
+                    }}>
+                    {b.title}
+                    <img
+                      src={icLink}
+                      width="15px"
+                      style={{
+                        marginLeft: "10px",
+                        display: "inline-block"
+                      }}></img>
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       <div className="bookmark-preview">
         <h2 className="title">bookmark preview</h2>

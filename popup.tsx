@@ -1,4 +1,5 @@
 import Logo from "~components/Logo"
+import TranslateNotionContent from "~components/Operations/TranslateNotionContent"
 
 import NotionLogin from "./components/NotionLogin"
 import SyncBookmark from "./components/Operations/SyncBookmark"
@@ -24,6 +25,7 @@ function IndexPopup() {
         loginedRender={
           <div className="operation-list">
             <SyncBookmark />
+            {/* <TranslateNotionContent /> */}
           </div>
         }
       />

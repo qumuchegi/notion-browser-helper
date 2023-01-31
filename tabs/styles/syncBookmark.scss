@@ -29,13 +29,17 @@ body {
       color: rgb(194, 24, 24);
     }
     .bookmark-tree {
+      width: 70%;
+      margin-top: 20px;
+      margin-right: auto;
+      margin-left: auto;
+      margin-bottom: 20px;
       border: solid 1px #aaa;
       padding: 20px;
       max-height: 500px;
-      background-color: #eee;
+      // background-color: #eee;
       overflow: scroll;
       border-radius: 10px;
-      margin-top: 20px;
 
       .bookmark-add-time {
         color: #bbb;
@@ -105,7 +109,7 @@ body {
       border: solid 1px #aaa;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
     }
     p.search-tip-warn {

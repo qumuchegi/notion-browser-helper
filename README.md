@@ -12,6 +12,10 @@ connect browser with Notion, and bootstraped by [Plasmo](https://docs.plasmo.com
 
 ## use
 
+<video width="300px" controls>
+  <source src='https://player.bilibili.com/player.html?high_quality=1&bvid=BV1dM411a7gx'/>
+</video>
+
 download this [package](./packages_to_open/chrome-mv3-prod.zip), then unZip it and install it on Chrome like other Chrome extension.
 
 how to install extension on browser? follow these steps:

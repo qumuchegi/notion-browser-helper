@@ -23,7 +23,7 @@ let notionPageIdMap2BookmarkBlockIds = new Map<
 >()
 function addPageId(newPageId: string) {
   pageIds = [...new Set([...pageIds, newPageId])]
-  registerBookmarkSyncListener()
+  registerBookmarkSyncListener(pageIds)
 }
 function initNotionClientOnBackground(notionAccessToken: string) {
   notionClient = new Client({
@@ -49,7 +49,7 @@ function getBookmarkNotionBlockIdByPageId(pageId) {
   }
 }
 
-function registerBookmarkSyncListener() {
+function registerBookmarkSyncListener(pageIds) {
   pageIds.forEach((pageId) => {
     addBookmarkListenerOnAllEvent(pageId, () =>
       queueExcuteSyncBookmarkPromises(() => {
